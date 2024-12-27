@@ -26,11 +26,11 @@ spec:
           while true; do
             # 로그 생성
             echo "$(date) INFO: This is a test log."
-            echo "$(date) ERROR: This is a simulated error log."
             
             # 이벤트 트리거 (간단한 오류 상태 시뮬레이션)
             if [ $((RANDOM % 5)) -eq 0 ]; then
               echo "$(date) ERROR: Simulating a failure event" >&2
+              kubectl annotate pod $HOSTNAME failure-event="$(date)" --overwrite
             fi
 
             # 5초 대기

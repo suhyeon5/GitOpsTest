@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-event-generator
+  namespace: mcdp-dev
+labels:
+  app: log-event-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-event-generator
+  template:
+    metadata:
+      labels:
+        app: log-event-generator
+    spec:
+      containers:
+      - name: log-event-generator
+        image: busybox
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            # 로그 생성
+            echo "$(date) INFO: This is a test log."
+            echo "$(date) ERROR: This is a simulated error log."
+            
+            # 이벤트 트리거 (간단한 오류 상태 시뮬레이션)
+            if [ $((RANDOM % 5)) -eq 0 ]; then
+              echo "$(date) ERROR: Simulating a failure event" >&2
+            fi
+
+            # 5초 대기
+            sleep 5
+          done
+        resources:
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
